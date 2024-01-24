@@ -163,6 +163,7 @@ class DatabaseInterface(QMainWindow):
 
     def on_function_button_click(self, function_name, argumentss):
         arguments = argumentss.split('"')
+        print(arguments)
         if len(arguments) != 1:
             field_labels = []
             for i in range(1, len(arguments)):
@@ -186,16 +187,17 @@ class DatabaseInterface(QMainWindow):
         cursor.close()
 
         def parse_tuple_string(s):
-            try:
-                match = re.match(r'\((.*?)\)', s)
-                if match:
-                    values = match.group(1).replace('"', '').split(',')
-                    return [eval(value) if value.isdigit() else value for value in values]
+                if isinstance(s, (str, bytes)):
+                    match = re.match(r'\((.*?)\)', s.decode('utf-8') if isinstance(s, bytes) else s)
+                    if match:
+                        values = match.group(1).replace('"', '').split(',')
+                        parsed_values = [int(value) if value.isdigit() else value for value in values]
+                        return parsed_values
+                    else:
+                        print(s)
+                        return None
                 else:
-                    return None
-            except Exception as e:
-                print(f"Error parsing tuple string: {e}")
-                return None
+                    return s
 
         result_lists = [parse_tuple_string(item[0]) for item in output if parse_tuple_string(item[0]) is not None]
         self.handle_third_window_data(result_lists)
