@@ -1,0 +1,171 @@
+--РОЛЬ ДЛЯ СОТРУДНИКОВ
+CREATE ROLE Сотрудник WITH
+	LOGIN
+	NOSUPERUSER
+	INHERIT
+	NOCREATEDB
+	CREATEROLE
+	NOREPLICATION;
+
+
+--РОЛЬ ДЛЯ ТЕХНИЧЕСКОГО АДМИНИСТРАТОРА (ГЛАВНЫЙ МАСТЕР)
+CREATE ROLE ГлавМас WITH
+	LOGIN
+	NOSUPERUSER
+	INHERIT
+	NOCREATEDB
+	CREATEROLE
+	NOREPLICATION;
+
+
+--РОЛЬ ДЛЯ КЛИЕНТСКОГО АДМИНИСТРАТОРА
+CREATE ROLE Админ WITH
+	LOGIN
+	SUPERUSER
+	INHERIT
+	CREATEDB
+	CREATEROLE
+	REPLICATION;
+
+
+--СОЗДАНИЕ ЮЗЕРОВ И ДОБАВЛЕНИЕ ИХ К РОЛИ
+CREATE USER "89161234567" WITH PASSWORD 'glmas1';
+GRANT ГлавМас TO "89161234567"
+
+CREATE USER "84959876543" WITH PASSWORD 'admin1';
+GRANT Админ TO "84959876543"
+
+CREATE USER "89125553555" WITH PASSWORD 'mex1';
+GRANT Сотрудник TO "89125553555"
+CREATE USER "83432223344" WITH PASSWORD 'mex2';
+GRANT Сотрудник TO "83432223344"
+CREATE USER "89876543210" WITH PASSWORD 'mex3';
+GRANT Сотрудник TO "89876543210"
+CREATE USER "86425871067" WITH PASSWORD 'mex4';
+GRANT Сотрудник TO "86425871067"
+CREATE USER "89652034780" WITH PASSWORD 'mex5';
+GRANT Сотрудник TO "89652034780"
+CREATE USER "89652147860" WITH PASSWORD 'mex6';
+GRANT Сотрудник TO "89652147860"
+CREATE USER "87852103655" WITH PASSWORD 'mex7';
+GRANT Сотрудник TO "87852103655"
+CREATE USER "89652145607" WITH PASSWORD 'mex8';
+GRANT Сотрудник TO "89652145607"
+
+--РАЗРЕШЕНИЯ ДЛЯ РОЛИ АДМИН
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Владелец_Авто TO Админ;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Сотрудники TO Админ;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Автомобили TO Админ;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Запчасти TO Админ;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Заказы TO Админ;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Проданные_Запчасти_В_Заказе TO Админ;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Платежи TO Админ;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Услуги TO Админ;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE График_Работы TO Админ;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Услуги_В_Заказе TO Админ;
+
+--РАЗРЕШЕНИЯ ДЛЯ РОЛИ ГлавМас
+GRANT SELECT ON TABLE Автомобили TO ГлавМас;
+GRANT SELECT ON TABLE Сотрудники TO ГлавМас;
+GRANT SELECT ON TABLE График_Работы TO ГлавМас;
+GRANT SELECT ON TABLE Запчасти TO ГлавМас;
+GRANT SELECT ON TABLE Услуги TO ГлавМас
+GRANT SELECT, UPDATE ON TABLE Заказы TO ГлавМас;
+GRANT SELECT, UPDATE, DELETE ON TABLE Проданные_Запчасти_В_Заказе TO ГлавМас;
+GRANT SELECT, UPDATE, DELETE ON TABLE Услуги_В_Заказе TO ГлавМас;
+
+--РАЗРЕШЕНИЯ ДЛЯ РОЛИ Сотрудник
+GRANT SELECT ON TABLE Автомобили TO Сотрудник;
+GRANT SELECT ON TABLE Сотрудники TO Сотрудник;
+GRANT SELECT ON TABLE Заказы TO Сотрудник;
+GRANT SELECT ON TABLE Проданные_Запчасти_В_Заказе TO Сотрудник;
+GRANT SELECT ON TABLE График_Работы TO Сотрудник;
+GRANT SELECT ON TABLE Запчасти TO Сотрудник;
+GRANT SELECT ON TABLE Услуги_В_Заказе TO Сотрудник;
+
+
+--ПОЛИТИКА НА УРОВНЕ СТРОКЪ
+ALTER TABLE Автомобили ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Заказы ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Проданные_Запчасти_В_Заказе ENABLE ROW LEVEL SECURITY;
+ALTER TABLE График_Работы ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Запчасти ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Сотрудники ENABLE ROW LEVEL SECURITY;
+ALTER TABLE Услуги_В_Заказе ENABLE ROW LEVEL SECURITY;
+
+--РЛС ДЛЯ ТАБЛИЦЫ СОТРУДНИКИ
+CREATE POLICY rls_Сотрудник_sel ON Сотрудники AS PERMISSIVE FOR SELECT TO Сотрудник
+USING (Номер_Телефона = current_user);
+CREATE POLICY rls_Админ_all ON Сотрудники AS PERMISSIVE FOR ALL TO Админ
+USING (true);
+CREATE POLICY rls_ГлавМас_sel ON Сотрудники AS PERMISSIVE FOR SELECT TO ГлавМас
+USING (true);
+
+--РЛС ДЛЯ ТАБЛИЦЫ ГРАФИК_РАБОТЫ
+CREATE POLICY rls_Сотрудник_sel ON График_Работы AS PERMISSIVE FOR SELECT TO Сотрудник
+USING ((EXISTS (SELECT 1 FROM Сотрудники WHERE (Сотрудники.ID_Сотрудника = График_Работы.ID_Сотрудника))));
+CREATE POLICY rls_Админ_all ON График_Работы AS PERMISSIVE FOR ALL TO Админ
+USING (true);
+CREATE POLICY rls_ГлавМас_sel ON График_Работы AS PERMISSIVE FOR SELECT TO ГлавМас
+USING (true);
+
+--РЛС ДЛЯ ТАБЛИЦЫ УСЛУГИ В ЗАКАЗЕ
+CREATE POLICY rls_Сотрудник_sel ON Услуги_В_Заказе AS PERMISSIVE FOR SELECT TO Сотрудник
+USING ((EXISTS (SELECT 1 FROM Сотрудники WHERE (Сотрудники.ID_Сотрудника = Услуги_В_Заказе.ID_Сотрудника))));
+CREATE POLICY rls_Админ_all ON Услуги_В_Заказе AS PERMISSIVE FOR ALL TO Админ
+USING (true);
+CREATE POLICY rls_ГлавМас_sel ON Услуги_В_Заказе AS PERMISSIVE FOR SELECT TO ГлавМас
+USING (true);
+CREATE POLICY rls_ГлавМас_up ON Услуги_В_Заказе AS PERMISSIVE FOR UPDATE TO ГлавМас
+USING (true);
+CREATE POLICY rls_ГлавМас_del ON Услуги_В_Заказе AS PERMISSIVE FOR DELETE TO ГлавМас
+USING (true);
+
+--РЛС ДЛЯ ТАБЛИЦЫ ЗАКАЗЫ
+CREATE POLICY rls_Сотрудник_sel ON Заказы AS PERMISSIVE FOR SELECT TO Сотрудник
+USING ((EXISTS (SELECT 1 FROM Услуги_В_Заказе WHERE (Услуги_В_Заказе.ID_Заказа = Заказы.ID_Заказа))));
+CREATE POLICY rls_Админ_all ON Заказы AS PERMISSIVE FOR ALL TO Админ
+USING (true);
+CREATE POLICY rls_ГлавМас_sel ON Заказы AS PERMISSIVE FOR SELECT TO ГлавМас
+USING (true);
+CREATE POLICY rls_ГлавМас_up ON Заказы AS PERMISSIVE FOR UPDATE TO ГлавМас
+USING (true);
+
+--РЛС ДЛЯ ТАБЛИЦЫ АВТОМОБИЛИ
+CREATE POLICY rls_Сотрудник_sel ON Автомобили AS PERMISSIVE FOR SELECT TO Сотрудник
+USING ((EXISTS (SELECT 1 FROM Заказы WHERE (Заказы.ID_Автомобиля = Автомобили.ID_Автомобиля))));
+CREATE POLICY rls_Админ_all ON Автомобили AS PERMISSIVE FOR ALL TO Админ
+USING (true);
+CREATE POLICY rls_ГлавМас_sel ON Заказы AS PERMISSIVE FOR SELECT TO ГлавМас
+USING (true);
+
+--РЛС ДЛЯ ТАБЛИЦЫ ПРОДАННЫЕ ЗАПЧАСТИ В РАМКАХ ЗАКАЗА
+CREATE POLICY rls_Сотрудник_sel ON Проданные_Запчасти_В_Заказе AS PERMISSIVE FOR SELECT TO Сотрудник
+USING ((EXISTS (SELECT 1 FROM Заказы WHERE (Заказы.ID_Заказа = Проданные_Запчасти_В_Заказе.ID_Заказа))));
+CREATE POLICY rls_Админ_all ON Проданные_Запчасти_В_Заказе AS PERMISSIVE FOR ALL TO Админ
+USING (true);
+CREATE POLICY rls_ГлавМас_sel ON Проданные_Запчасти_В_Заказе AS PERMISSIVE FOR SELECT TO ГлавМас
+USING (true);
+CREATE POLICY rls_ГлавМас_up ON Проданные_Запчасти_В_Заказе AS PERMISSIVE FOR UPDATE TO ГлавМас
+USING (true);
+CREATE POLICY rls_ГлавМас_del ON Проданные_Запчасти_В_Заказе AS PERMISSIVE FOR DELETE TO ГлавМас
+USING (true);
+
+--РЛС ДЛЯ ТАБЛИЦЫ ПРОДАННЫЕ ЗАПЧАСТИ
+CREATE POLICY rls_Сотрудник_sel ON Запчасти AS PERMISSIVE FOR SELECT TO Сотрудник
+USING ((EXISTS (SELECT 1 FROM Проданные_Запчасти_В_Заказе WHERE (Проданные_Запчасти_В_Заказе.ID_Запчасти = Запчасти.ID_Запчасти))));
+CREATE POLICY rls_Админ_all ON Запчасти AS PERMISSIVE FOR ALL TO Админ
+USING (true);
+CREATE POLICY rls_ГлавМас_sel ON Запчасти AS PERMISSIVE FOR SELECT TO ГлавМас
+USING (true);
+
+
+
+
+
+
+
+
+
+
+

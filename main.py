@@ -111,11 +111,30 @@ class DatabaseInterface(QMainWindow):
         self.initialize_ui()
 
     def initialize_ui(self):
+        access_1 = ['public']
+        access_2 = ['public', 'schema_for_sadmin']
+        access_3 = ['public', 'schema_for_sadmin', 'schema_for_admin']
         login_dialog = LoginDialog()
         login_dialog.login_signal.connect(self.login_info)
         login_dialog.exec_()
 
-        buttons_query = """
+        cursor = self.connection.cursor()
+        cursor.execute(f"""SELECT rolname
+                            FROM pg_user
+                            LEFT JOIN pg_auth_members ON pg_user.usesysid = pg_auth_members.member
+                            LEFT JOIN pg_roles ON pg_auth_members.roleid = pg_roles.oid
+                            WHERE usename = current_user;""")
+        results = cursor.fetchall()
+        cursor.close()
+        if str(results[0][0]) == 'Сотрудник':
+            data = access_1
+        elif str(results[0][0]) == "Админ":
+            data = access_2
+        else:
+            data = access_3
+        shemma = ', '.join(f"'{item}'" for item in data)
+
+        buttons_query = f"""
                 SELECT 
                     p.proname AS function_name, 
                     n.nspname AS schema_name,
@@ -125,9 +144,9 @@ class DatabaseInterface(QMainWindow):
                     pg_proc p
                     JOIN pg_namespace n ON p.pronamespace = n.oid
                 WHERE
-                    n.nspname = 'public'
+                    n.nspname IN ({shemma})
                 ORDER BY 
-                    function_name;
+                    schema_name, function_name;
                 """
         try:
             cursor = self.connection.cursor()
@@ -171,10 +190,11 @@ class DatabaseInterface(QMainWindow):
         if len(arguments) != 1:
             field_labels = []
             for i in range(1, len(arguments)):
-                if 'character' in arguments[i] or 'varying' in arguments[i] or 'integer' in arguments[i] or arguments[i] == '':
+                if 'character' in arguments[i] or 'varying' in arguments[i] or 'integer' in arguments[i] or 'numeric' in arguments[i] or 'date' in arguments[i] or 'text' in arguments[i] or 'timestamp' in arguments[i] or arguments[i] == '':
                     continue
                 else:
                     field_labels.append(arguments[i])
+
             second_window = SecondWindow(field_labels)
             second_window.data_signal.connect(lambda data: self.handle_second_window_data(data, function_name))
             second_window.exec_()
@@ -211,34 +231,46 @@ class DatabaseInterface(QMainWindow):
             error_message = f"Произошла ошибка: {str(error[len(error) - 1])}"
             QMessageBox.critical(self, "Ошибка", error_message)
 
-    def handle_second_window_data(self, data, function_name):
-        cursor = self.connection.cursor()
-        result_string = ', '.join(f"'{item}'" for item in data)
-        cursor.execute(f'SELECT {function_name}({result_string});')
-
-        output = cursor.fetchall()
-        cursor.close()
-
-        def parse_tuple_string(s):
-                if isinstance(s, (str, bytes)):
-                    match = re.match(r'\((.*?)\)', s.decode('utf-8') if isinstance(s, bytes) else s)
-                    if match:
-                        values = match.group(1).replace('"', '').split(',')
-                        parsed_values = [int(value) if value.isdigit() else value for value in values]
-                        return parsed_values
-                    else:
-                        print(s)
-                        return None
-                else:
-                    return s
-
-        result_lists = [parse_tuple_string(item[0]) for item in output if parse_tuple_string(item[0]) is not None]
-
-
-        if "Выгрузить" in function_name:
-            self.get_to_file(function_name, result_lists)
+    def parse_tuple_string(self, s):
+        if isinstance(s, (str, bytes)):
+            match = re.match(r'\((.*?)\)', s.decode('utf-8') if isinstance(s, bytes) else s)
+            if match:
+                values = match.group(1).replace('"', '').split(',')
+                parsed_values = [int(value) if value.isdigit() else value for value in values]
+                return parsed_values
+            else:
+                print(s)
+                return None
         else:
-            self.handle_third_window_data(result_lists)
+            return s
+    def add_call(self, function_name, result_string):
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(f'CALL {function_name}({result_string});')
+            cursor.close()
+
+        except Exception as e:
+            error = str(e).split(":")
+            error_message = f"Произошла ошибка: {str(error[len(error) - 1])}"
+            QMessageBox.critical(self, "Ошибка", error_message)
+    def handle_second_window_data(self, data, function_name):
+        result_string = ', '.join(f"'{item}'" for item in data)
+        if "Добавить" in function_name:
+            print(result_string)
+            print(function_name)
+            self.add_call(function_name, result_string)
+        else:
+            cursor = self.connection.cursor()
+
+            cursor.execute(f'SELECT {function_name}({result_string});')
+            output = cursor.fetchall()
+            cursor.close()
+            result_lists = [self.parse_tuple_string(item[0]) for item in output if self.parse_tuple_string(item[0]) is not None]
+
+            if "Выгрузить" in function_name:
+                self.get_to_file(function_name, result_lists)
+            else:
+                self.handle_third_window_data(result_lists)
 
     def login_info(self, login, password):
         try:
@@ -246,8 +278,18 @@ class DatabaseInterface(QMainWindow):
                 database="autoservice",
                 #user=login,
                 #password=password,
-                user="sotrydnik",#postgres",
-                password="sotrydnik",#172839",
+
+                user="89125553555",
+                password="mex1",
+
+                #user="84959876543",
+                #password="admin1",
+
+                #user="89161234567",
+                #password="glmas1",
+
+                #user="postgres",
+                #password="172839",
                 host="192.168.0.9"
             )
         except Exception as e:
