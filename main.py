@@ -5,6 +5,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets, Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget, QVBoxLayout, QWidget, QTableWidget, QTableWidgetItem, QPushButton, QDialog, QLabel, QLineEdit, QMessageBox, QListWidget
 from PyQt5.QtCore import Qt, pyqtSignal
 import traceback
+from docx import Document
+
 
 def log_uncaught_exceptions(ex_cls, ex, tb): #error catcher
     text = '{}: {}:\n'.format(ex_cls.__name__, ex)
@@ -115,7 +117,7 @@ class DatabaseInterface(QMainWindow):
 
         buttons_query = """
                 SELECT 
-                    p.proname AS function_name,
+                    p.proname AS function_name, 
                     n.nspname AS schema_name,
                     pg_get_function_identity_arguments(p.oid) AS arguments,
                     pg_get_function_result(p.oid) AS result_type
@@ -161,13 +163,15 @@ class DatabaseInterface(QMainWindow):
         third_window = ThirdWindow(data)
         third_window.exec_()
 
+
+
     def on_function_button_click(self, function_name, argumentss):
         arguments = argumentss.split('"')
-        print(arguments)
+        #print(arguments)
         if len(arguments) != 1:
             field_labels = []
             for i in range(1, len(arguments)):
-                if 'character' in arguments[i] or 'varying' in arguments[i] or arguments[i] == '':
+                if 'character' in arguments[i] or 'varying' in arguments[i] or 'integer' in arguments[i] or arguments[i] == '':
                     continue
                 else:
                     field_labels.append(arguments[i])
@@ -177,6 +181,35 @@ class DatabaseInterface(QMainWindow):
         else:
             self.handle_second_window_data('', function_name)
 
+    def get_to_file(self, function_name, orderdata):
+        try:
+            # Создаем новый документ
+            new_document = Document()
+            # Проходим по каждому заказу в списке
+            print(orderdata[1])
+            print("uwu")
+            for order_data in orderdata:
+                print(order_data)
+                # Генерируем текст договора на основе данных заказа
+                contract_text = (
+                    f"Договор по заказу #{orderdata[0][0]}\n\n"
+                    f"Дата: {orderdata[0][1]}\n"
+                    f"Статус заказа: {orderdata[0][2]}\n"
+                    f"Клиент: {orderdata[0][3]} {orderdata[0][4]}\n"
+                    f"Автомобиль: {orderdata[0][5]} {orderdata[0][6]}\n\n"
+                    f"Детали заказа:{order_data[7]} {order_data[8]}\n"
+                    f"Дата платежа: {order_data[10]}"
+                )
+                # Вставляем текст договора в новый документ
+
+                new_document.add_paragraph(contract_text)
+                new_document.add_paragraph(f"Итоговая сумма платежа: {order_data[9]}\n")
+            # Сохраняем результаты в новый файл
+            new_document.save("договор_по_заказам_результат.docx")
+        except Exception as e:
+            error = str(e).split(":")
+            error_message = f"Произошла ошибка: {str(error[len(error) - 1])}"
+            QMessageBox.critical(self, "Ошибка", error_message)
 
     def handle_second_window_data(self, data, function_name):
         cursor = self.connection.cursor()
@@ -200,7 +233,12 @@ class DatabaseInterface(QMainWindow):
                     return s
 
         result_lists = [parse_tuple_string(item[0]) for item in output if parse_tuple_string(item[0]) is not None]
-        self.handle_third_window_data(result_lists)
+
+
+        if "Выгрузить" in function_name:
+            self.get_to_file(function_name, result_lists)
+        else:
+            self.handle_third_window_data(result_lists)
 
     def login_info(self, login, password):
         try:

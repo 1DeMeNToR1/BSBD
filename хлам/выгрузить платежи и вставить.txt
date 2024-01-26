@@ -1,0 +1,157 @@
+from docx import Document
+import psycopg2
+
+# Замените значения подключения на свои
+conn = psycopg2.connect(
+    database="autoservice",
+    user="postgres",
+    password="172839",
+    host="192.168.0.9"
+)
+sql_query = "SELECT Остаток_По_Платежам(3);"
+
+with conn.cursor() as cursor:
+    cursor.execute(sql_query)
+    results = cursor.fetchall()
+# Загружаем существующий .docx файл
+document = Document("шаблон.docx")
+# Шаблон документа с заполнителями
+template = "Платежи для {name} {surname} {patronymic} для машины марки {car_brand} модели {car_model} на сумму {amount}."
+# Создаем новый документ
+new_document = Document()
+# Ищем определенное место вставки (например, по ключевому слову)
+keyword = "ВСТАВИТЬ_СЮДА"
+for paragraph in document.paragraphs:
+    if keyword in paragraph.text:
+        # Вставляем новые параграфы перед найденным ключевым словом
+        for result in results:
+            data = result[0].strip('()').split(',')
+            print(data)
+            if len(data) == 6:
+                name, surname, patronymic, car_brand, car_model, amount = data
+                new_document.add_paragraph(template.format(name=name, surname=surname, patronymic=patronymic, car_brand=car_brand, car_model=car_model, amount=amount))
+            else:
+                print(f"Неверный формат данных: {result}")
+    else:
+        # Копируем остальные параграфы в новый документ
+        new_paragraph = new_document.add_paragraph(paragraph.text)
+        new_paragraph.style = paragraph.style  # Копируем стиль параграфа
+
+# Сохраняем результаты в новый файл
+new_document.save("результат.docx")
+
+conn.close()
+
+
+
+
+
+
+
+
+
+
+
+
+CREATE OR REPLACE FUNCTION Выгрузить_заказ(
+    Заказ_ID INTEGER
+) RETURNS TABLE (
+    ID_Заказа INTEGER,
+    Дата_Заказа DATE,
+    Статус_Заказа VARCHAR(50),
+    Имя_Владельца VARCHAR(50),
+    Фамилия_Владельца VARCHAR(50),
+    Марка_Авто VARCHAR(50),
+    Модель_Авто VARCHAR(50),
+    Проданная_Запчасть_Наименование VARCHAR(100),
+    Количество_Запчастей INTEGER,
+    Сумма_Платежа DECIMAL(10, 2),
+    Дата_Платежа DATE
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        Заказы.ID_Заказа,
+        Заказы.Дата_Заказа,
+        Заказы.Статус_Заказа,
+        Владелец_Авто.Имя,
+        Владелец_Авто.Фамилия,
+        Автомобили.Марка,
+        Автомобили.Модель,
+        Проданные_Запчасти_В_Заказе.Проданная_Запчасть_Наименование,
+        Проданные_Запчасти_В_Заказе.Количество,
+        Платежи.Сумма_Платежа,
+        Платежи.Дата_Платежа
+    FROM
+        Заказы
+        JOIN Автомобили ON Заказы.ID_Автомобиля = Автомобили.ID_Автомобиля
+        JOIN Владелец_Авто ON Автомобили.ID_Владельца = Владелец_Авто.ID_Владельца
+        LEFT JOIN (
+            SELECT
+                Проданные_Запчасти_В_Заказе.ID_Заказа,
+                Запчасти.Наименование AS Проданная_Запчасть_Наименование,
+                Проданные_Запчасти_В_Заказе.Количество
+            FROM Проданные_Запчасти_В_Заказе
+            LEFT JOIN Запчасти ON Проданные_Запчасти_В_Заказе.ID_Запчасти = Запчасти.ID_Запчасти
+        ) AS Проданные_Запчасти_В_Заказе ON Заказы.ID_Заказа = Проданные_Запчасти_В_Заказе.ID_Заказа
+        LEFT JOIN (
+            SELECT
+                Платежи.ID_Заказа,
+                SUM(Сумма_платежа) AS Сумма_Платежа,
+                MAX(Дата_платежа) AS Дата_Платежа
+            FROM Платежи
+            GROUP BY Платежи.ID_Заказа
+        ) AS Платежи ON Заказы.ID_Заказа = Платежи.ID_Заказа
+    WHERE
+        Заказы.ID_Заказа = Заказ_ID;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT Выгрузить_заказ('1')
+
+
+
+CREATE OR REPLACE FUNCTION Выгрузить_заказ(Заказ_ID INTEGER) RETURNS TABLE (
+    ID_Заказа INTEGER,
+    Дата_Заказа DATE,
+    Статус_Заказа VARCHAR(50),
+    Имя_Владельца VARCHAR(50),
+    Фамилия_Владельца VARCHAR(50),
+    Марка_Авто VARCHAR(50),
+    Модель_Авто VARCHAR(50),
+    Проданная_Запчасть_Наименование VARCHAR(100),
+    Количество_Запчастей INTEGER,
+    Сумма_Платежа DECIMAL(10, 2),
+    Дата_Платежа DATE
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT Заказы.ID_Заказа, Заказы.Дата_Заказа, Заказы.Статус_Заказа,
+           Владелец_Авто.Имя, Владелец_Авто.Фамилия,
+           Автомобили.Марка, Автомобили.Модель,
+           Запчасти.Наименование AS Проданная_Запчасть_Наименование,
+           Проданные_Запчасти_В_Заказе.Количество,
+           Платежи.Сумма_платежа, Платежи.Дата_платежа
+    FROM Заказы
+    JOIN Автомобили ON Заказы.ID_Автомобиля = Автомобили.ID_Автомобиля
+    JOIN Владелец_Авто ON Автомобили.ID_Владельца = Владелец_Авто.ID_Владельца
+    LEFT JOIN Проданные_Запчасти_В_Заказе ON Заказы.ID_Заказа = Проданные_Запчасти_В_Заказе.ID_Заказа
+    LEFT JOIN Запчасти ON Проданные_Запчасти_В_Заказе.ID_Запчасти = Запчасти.ID_Запчасти
+    LEFT JOIN Платежи ON Заказы.ID_Заказа = Платежи.ID_Заказа
+    WHERE Заказы.ID_Заказа = Заказ_ID;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+
+
+
+
+
+
+
+
+
+
+

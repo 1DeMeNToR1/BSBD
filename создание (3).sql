@@ -65,8 +65,10 @@ CREATE TABLE Платежи (
     ID_Платежа SERIAL PRIMARY KEY,
     Сумма_платежа DECIMAL(10, 2),
     Дата_платежа DATE,
-    Статус_платежа TEXT
+    Статус_платежа TEXT,
+    ID_Заказа INTEGER REFERENCES Заказы(ID_Заказа) ON DELETE CASCADE
 );
+
 
 -- Создание таблицы Услуги
 CREATE TABLE Услуги (
