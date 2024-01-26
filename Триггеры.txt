@@ -1,0 +1,188 @@
+				--ТРИГГЕР НА ФАМИЛИЯ С БОЛЬЩОЙ БУКВЫ
+CREATE OR REPLACE FUNCTION check_Фамилия()
+RETURNS TRIGGER AS $$
+BEGIN
+	IF NEW.Фамилия ~ '^[A-Я]' THEN
+		RETURN NEW;
+	ELSE
+		RAISE EXCEPTION 'Фамилия должна начинаться с большой буквы';
+	END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_check_Фамилия
+BEFORE INSERT ON Владелец_Авто
+FOR EACH ROW
+EXECUTE FUNCTION check_Фамилия();
+
+
+				--ТРИГГЕР НА ИМЯ С БОЛЬЩОЙ БУКВЫ
+CREATE OR REPLACE FUNCTION check_Имя()
+RETURNS TRIGGER AS $$
+BEGIN
+	IF NEW.Имя ~ '^[A-Я]' THEN
+		RETURN NEW;
+	ELSE
+		RAISE EXCEPTION 'Имя должно начинаться с большой буквы';
+	END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_check_Имя
+BEFORE INSERT ON Владелец_Авто
+FOR EACH ROW
+EXECUTE FUNCTION check_Имя();
+
+
+				--ТРИГГЕР НА ОТЧЕСТВО С БОЛЬЩОЙ БУКВЫ
+CREATE OR REPLACE FUNCTION check_Отчество()
+RETURNS TRIGGER AS $$
+BEGIN
+	IF NEW.Отчество ~ '^[A-Я]' THEN
+		RETURN NEW;
+	ELSE
+		RAISE EXCEPTION 'Отчество должно начинаться с большой буквы';
+	END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_check_Отчество
+BEFORE INSERT ON Владелец_Авто
+FOR EACH ROW
+EXECUTE FUNCTION check_Отчество();
+
+
+				--ТРИГГЕР НА НАЗВАНИЕ МОДЕЛИ НА АНГЛ ЯЗ
+CREATE OR REPLACE FUNCTION check_Модель()
+RETURNS TRIGGER AS $$
+BEGIN
+	IF NEW.Модель ~ '^[A-Z]' THEN
+		RETURN NEW;
+	ELSE
+		RAISE EXCEPTION 'Модель должно начинаться с большой буквы на английской раскладке';
+	END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_check_Модель
+BEFORE INSERT ON Автомобили
+FOR EACH ROW
+EXECUTE FUNCTION check_Модель();
+
+
+				--ТРИГГЕР НА НАЗВАНИЕ МАРКИ НА АНГЛ ЯЗ
+CREATE OR REPLACE FUNCTION check_Марка()
+RETURNS TRIGGER AS $$
+BEGIN
+	IF NEW.Марка ~ '^[A-Z]' THEN
+		RETURN NEW;
+	ELSE
+		RAISE EXCEPTION 'Марка должно начинаться с большой буквы на английской раскладке';
+	END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_check_Марка
+BEFORE INSERT ON Автомобили
+FOR EACH ROW
+EXECUTE FUNCTION check_Марка();
+
+
+				--ТРИГГЕР НА НОМЕР ТЕЛЕФОНА, ЧТОБЫ НАЧИНАЛСЯ С 8
+CREATE OR REPLACE FUNCTION check_phone_number()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Проверяем, начинается ли номер телефона с "8"
+    IF NEW."Телефон" IS NOT NULL AND NEW."Телефон" NOT LIKE '8%'
+    THEN
+        RAISE EXCEPTION 'Номер телефона должен начинаться с 8';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER check_phone_number_trigger
+BEFORE INSERT OR UPDATE ON "Владелец_Авто"
+FOR EACH ROW
+EXECUTE FUNCTION check_phone_number();
+
+				--Триггер на проверку статуса заказа перед обновлением
+
+CREATE OR REPLACE FUNCTION check_order_status()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW."Статус_Заказа" NOT IN ('В обработке', 'Выполнен', 'Отменен')
+    THEN
+        RAISE EXCEPTION 'Недопустимый статус заказа';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER check_order_status_trigger
+BEFORE UPDATE ON "Заказы"
+FOR EACH ROW
+EXECUTE FUNCTION check_order_status();
+
+
+				--Триггер для автоматического обновления статуса заказа при изменении статуса его деталей
+
+CREATE OR REPLACE FUNCTION update_order_status()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE "Заказы"
+    SET "Статус_Заказа" = 'В обработке'
+    WHERE "ID_Заказа" = NEW."ID_Заказа" AND
+          EXISTS (SELECT 1 FROM "Проданные_Запчасти_В_Заказе" WHERE "ID_Заказа" = NEW."ID_Заказа" AND "Статус" = 'В обработке');
+
+    UPDATE "Заказы"
+    SET "Статус_Заказа" = 'Выполнен'
+    WHERE "ID_Заказа" = NEW."ID_Заказа" AND
+          NOT EXISTS (SELECT 1 FROM "Проданные_Запчасти_В_Заказе" WHERE "ID_Заказа" = NEW."ID_Заказа" AND "Статус" = 'В обработке');
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_order_status_trigger
+AFTER UPDATE ON "Проданные_Запчасти_В_Заказе"
+FOR EACH ROW
+EXECUTE FUNCTION update_order_status();
+
+
+				--Триггер для проверки суммы платежей
+
+CREATE OR REPLACE FUNCTION check_payment_amount()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW."Сумма_платежа" <= 0
+    THEN
+        RAISE EXCEPTION 'Недопустимая сумма платежа';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER check_payment_amount_trigger
+BEFORE INSERT OR UPDATE ON "Платежи"
+FOR EACH ROW
+EXECUTE FUNCTION check_payment_amount();
+
+				--триггер, который автоматически устанавливает текущую дату при создании нового заказа
+
+CREATE OR REPLACE FUNCTION set_order_date()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW."Дата_Заказа" := CURRENT_DATE;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_order_date_trigger
+BEFORE INSERT ON "Заказы"
+FOR EACH ROW
+EXECUTE FUNCTION set_order_date();

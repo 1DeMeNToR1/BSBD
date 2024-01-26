@@ -246,8 +246,8 @@ class DatabaseInterface(QMainWindow):
                 database="autoservice",
                 #user=login,
                 #password=password,
-                user="postgres",
-                password="172839",
+                user="sotrydnik",#postgres",
+                password="sotrydnik",#172839",
                 host="192.168.0.9"
             )
         except Exception as e:
