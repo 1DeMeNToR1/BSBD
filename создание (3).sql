@@ -1,3 +1,12 @@
+CREATE TABLE Марка (
+    ID_Марки SERIAL PRIMARY KEY,
+    Название VARCHAR(50) NOT NULL
+);
+CREATE TABLE Модель (
+    ID_Модели SERIAL PRIMARY KEY,
+    ID_Марки INTEGER REFERENCES Марка(ID_Марки) ON DELETE CASCADE,
+    Название VARCHAR(50) NOT NULL
+);
 -- Создание таблицы Владелец_Авто
 CREATE TABLE Владелец_Авто (
     ID_Владельца SERIAL PRIMARY KEY,

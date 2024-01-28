@@ -80,7 +80,7 @@ class SecondWindow(QDialog):
     def on_ok_button_click(self):
         data = [widget.text() for widget in self.field_widgets]
         self.data_signal.emit(data)
-        self.accept()
+        #self.accept()
 
 class ThirdWindow(QDialog):
     def __init__(self, data, parent=None):
@@ -112,7 +112,7 @@ class DatabaseInterface(QMainWindow):
 
     def initialize_ui(self):
         access_1 = ['public']
-        access_2 = ['public', 'schema_for_sadmin']
+        access_2 = ['public', 'schema_for_admin']
         access_3 = ['public', 'schema_for_sadmin', 'schema_for_admin']
         login_dialog = LoginDialog()
         login_dialog.login_signal.connect(self.login_info)
@@ -125,6 +125,7 @@ class DatabaseInterface(QMainWindow):
                             LEFT JOIN pg_roles ON pg_auth_members.roleid = pg_roles.oid
                             WHERE usename = current_user;""")
         results = cursor.fetchall()
+        self.connection.commit()
         cursor.close()
         if str(results[0][0]) == 'Сотрудник':
             data = access_1
@@ -152,6 +153,7 @@ class DatabaseInterface(QMainWindow):
             cursor = self.connection.cursor()
             cursor.execute(buttons_query)
             results = cursor.fetchall()
+            self.connection.commit()
             cursor.close()
             button_spacing = 0
             tab = QWidget()
@@ -170,6 +172,9 @@ class DatabaseInterface(QMainWindow):
             error_message = f"Произошла ошибка при выполнении запроса: {str(error[len(error) - 1])}"
             QMessageBox.critical(self, "Ошибка", error_message)
             print(error_message)
+            self.connection.rollback()
+        finally:
+            cursor.close()
 
         tables = self.get_all_tables()
         for table in tables:
@@ -230,6 +235,7 @@ class DatabaseInterface(QMainWindow):
             error = str(e).split(":")
             error_message = f"Произошла ошибка: {str(error[len(error) - 1])}"
             QMessageBox.critical(self, "Ошибка", error_message)
+            self.connection.rollback()
 
     def parse_tuple_string(self, s):
         if isinstance(s, (str, bytes)):
@@ -247,31 +253,44 @@ class DatabaseInterface(QMainWindow):
         try:
             cursor = self.connection.cursor()
             cursor.execute(f'CALL {function_name}({result_string});')
-            cursor.close()
-
+            self.connection.commit()
         except Exception as e:
             error = str(e).split(":")
             error_message = f"Произошла ошибка: {str(error[len(error) - 1])}"
             QMessageBox.critical(self, "Ошибка", error_message)
+            self.connection.rollback()
+        finally:
+            if cursor:
+                cursor.close()
     def handle_second_window_data(self, data, function_name):
-        result_string = ', '.join(f"'{item}'" for item in data)
-        if "Добавить" in function_name:
-            print(result_string)
-            print(function_name)
-            self.add_call(function_name, result_string)
-        else:
-            cursor = self.connection.cursor()
-
-            cursor.execute(f'SELECT {function_name}({result_string});')
-            output = cursor.fetchall()
-            cursor.close()
-            result_lists = [self.parse_tuple_string(item[0]) for item in output if self.parse_tuple_string(item[0]) is not None]
-
-            if "Выгрузить" in function_name:
-                self.get_to_file(function_name, result_lists)
+        cursor = None
+        try:
+            result_string = ', '.join(f"'{item}'" for item in data)
+            if "Добавить" in function_name:
+                print(result_string)
+                print(function_name)
+                self.add_call(function_name, result_string)
             else:
-                self.handle_third_window_data(result_lists)
+                cursor = self.connection.cursor()
 
+                cursor.execute(f'SELECT {function_name}({result_string});')
+                output = cursor.fetchall()
+                self.connection.commit()
+                cursor.close()
+                result_lists = [self.parse_tuple_string(item[0]) for item in output if self.parse_tuple_string(item[0]) is not None]
+
+                if "Выгрузить" in function_name:
+                    self.get_to_file(function_name, result_lists)
+                else:
+                    self.handle_third_window_data(result_lists)
+        except Exception as e:
+            error = str(e).split(":")
+            error_message = f"Произошла ошибка: {str(error[len(error) - 1])}"
+            QMessageBox.critical(self, "Ошибка", error_message)
+            self.connection.rollback()
+        finally:
+            if cursor:
+                cursor.close()
     def login_info(self, login, password):
         try:
             self.connection = psycopg2.connect(
@@ -279,8 +298,8 @@ class DatabaseInterface(QMainWindow):
                 #user=login,
                 #password=password,
 
-                user="89125553555",
-                password="mex1",
+                #user="89125553555",
+                #password="mex1",
 
                 #user="84959876543",
                 #password="admin1",
@@ -288,8 +307,8 @@ class DatabaseInterface(QMainWindow):
                 #user="89161234567",
                 #password="glmas1",
 
-                #user="postgres",
-                #password="172839",
+                user="postgres",
+                password="172839",
                 host="192.168.0.9"
             )
         except Exception as e:
@@ -322,6 +341,7 @@ class DatabaseInterface(QMainWindow):
         cursor = self.connection.cursor()
         cursor.execute(f"SELECT * FROM {table_name};")
         data = cursor.fetchall()
+        self.connection.commit()
         cursor.close()
         return data
 
@@ -329,6 +349,7 @@ class DatabaseInterface(QMainWindow):
         cursor = self.connection.cursor()
         cursor.execute(f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table_name}';")
         columns = cursor.fetchall()
+        self.connection.commit()
         cursor.close()
         return columns
 
@@ -336,6 +357,7 @@ class DatabaseInterface(QMainWindow):
         cursor = self.connection.cursor()
         cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';")
         tables = [table[0] for table in cursor.fetchall()]
+        self.connection.commit()
         cursor.close()
         return tables
 

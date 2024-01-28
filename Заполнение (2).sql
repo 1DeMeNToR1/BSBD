@@ -1,3 +1,30 @@
+-- Вставка данных в таблицу "Марка" для японских марок
+INSERT INTO Марка (Название) VALUES
+('Toyota'),
+('Honda'),
+('Nissan'),
+('Mitsubishi'),
+('Subaru');
+-- Вставка данных в таблицу "Модель" для соответствующих японских моделей
+INSERT INTO Модель (ID_Марки, Название) VALUES
+-- Для Toyota
+(1, 'Camry'),
+(1, 'Corolla'),
+(1, 'Rav4'),
+-- Для Honda
+(2, 'Civic'),
+(2, 'Accord'),
+(2, 'CR-V'),
+-- Для Nissan
+(3, 'Altima'),
+(3, 'Maxima'),
+(3, 'Rogue'),
+-- Для Mitsubishi
+(4, 'Lancer'),
+(4, 'Outlander'),
+-- Для Subaru
+(5, 'Impreza'),
+(5, 'Forester');
 -- Вставка тестовых данных для Владелец_Авто (10 клиентов)
 INSERT INTO Владелец_Авто (Имя, Фамилия, Отчество, Телефон, Адрес, Номер_ВУ)
 VALUES
