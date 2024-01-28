@@ -212,20 +212,6 @@ class DatabaseInterface(QMainWindow):
             new_document = Document()
             # Проходим по каждому заказу в списке
             for order_data in orderdata:
-                print(orderdata[0][0])
-                print(orderdata[0][1])
-                print(orderdata[0][2])
-                print(orderdata[0][3])
-                print(orderdata[0][4])
-                print(orderdata[0][5])
-                print(orderdata[0][6])
-                print(orderdata[0][7])
-                print(orderdata[0][8])
-                print(orderdata[0][9])
-                print(orderdata[0][10])
-                print("10")
-                #print(orderdata[0][11])
-                print("11")
                 # Генерируем текст договора на основе данных заказа
                 contract_text = (
                     f"Договор по заказу #{orderdata[0][0]}\n\n"
