@@ -211,10 +211,21 @@ class DatabaseInterface(QMainWindow):
             # Создаем новый документ
             new_document = Document()
             # Проходим по каждому заказу в списке
-            print(orderdata[1])
-            print("uwu")
             for order_data in orderdata:
-                print(order_data)
+                print(orderdata[0][0])
+                print(orderdata[0][1])
+                print(orderdata[0][2])
+                print(orderdata[0][3])
+                print(orderdata[0][4])
+                print(orderdata[0][5])
+                print(orderdata[0][6])
+                print(orderdata[0][7])
+                print(orderdata[0][8])
+                print(orderdata[0][9])
+                print(orderdata[0][10])
+                print("10")
+                #print(orderdata[0][11])
+                print("11")
                 # Генерируем текст договора на основе данных заказа
                 contract_text = (
                     f"Договор по заказу #{orderdata[0][0]}\n\n"
@@ -223,6 +234,7 @@ class DatabaseInterface(QMainWindow):
                     f"Клиент: {orderdata[0][3]} {orderdata[0][4]}\n"
                     f"Автомобиль: {orderdata[0][5]} {orderdata[0][6]}\n\n"
                     f"Детали заказа:{order_data[7]} {order_data[8]}\n"
+                    f"Запчасть:{order_data[7]} {order_data[8]}\n"
                     f"Дата платежа: {order_data[10]}"
                 )
                 # Вставляем текст договора в новый документ
@@ -233,8 +245,8 @@ class DatabaseInterface(QMainWindow):
             new_document.save("договор_по_заказам_результат.docx")
         except Exception as e:
             error = str(e).split(":")
-            error_message = f"Произошла ошибка: {str(error[len(error) - 1])}"
-            QMessageBox.critical(self, "Ошибка", error_message)
+            error_message = f"Произошла ошибка при выгрузки: {str(error[len(error) - 1])}"
+            QMessageBox.critical(self, "Ошибка выгрузки", error_message)
             self.connection.rollback()
 
     def parse_tuple_string(self, s):

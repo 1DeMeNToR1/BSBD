@@ -33,8 +33,7 @@ CREATE TABLE Сотрудники (
 -- Создание таблицы Автомобили
 CREATE TABLE Автомобили (
     ID_Автомобиля SERIAL PRIMARY KEY,
-    Марка VARCHAR(50),
-    Модель VARCHAR(50),
+    ID_Модели INTEGER REFERENCES Модель(ID_Модели) ON DELETE CASCADE,
     Год VARCHAR(4),
     Номер_СТС VARCHAR(10),
     VIN_Номер VARCHAR(18),

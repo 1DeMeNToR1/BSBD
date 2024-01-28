@@ -56,34 +56,29 @@ EXECUTE FUNCTION check_Отчество();
 CREATE OR REPLACE FUNCTION check_Модель()
 RETURNS TRIGGER AS $$
 BEGIN
-	IF NEW.Модель ~ '^[A-Z]' THEN
-		RETURN NEW;
-	ELSE
-		RAISE EXCEPTION 'Модель должно начинаться с большой буквы на английской раскладке';
-	END IF;
+    IF NEW.Модель ~ '^[A-Z]' THEN
+        RETURN NEW;
+    ELSE
+        RAISE EXCEPTION 'Модель должна начинаться с большой буквы на английской раскладке';
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_check_Модель
-BEFORE INSERT ON Автомобили
-FOR EACH ROW
-EXECUTE FUNCTION check_Модель();
 
 
 				--ТРИГГЕР НА НАЗВАНИЕ МАРКИ НА АНГЛ ЯЗ
 CREATE OR REPLACE FUNCTION check_Марка()
 RETURNS TRIGGER AS $$
 BEGIN
-	IF NEW.Марка ~ '^[A-Z]' THEN
-		RETURN NEW;
-	ELSE
-		RAISE EXCEPTION 'Марка должно начинаться с большой буквы на английской раскладке';
-	END IF;
+    IF NEW."Марка" ~ '^[A-Z]' THEN
+        RETURN NEW;
+    ELSE
+        RAISE EXCEPTION 'Марка должна начинаться с большой буквы на английской раскладке';
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_check_Марка
-BEFORE INSERT ON Автомобили
+CREATE TRIGGER trigger_check_brand
+BEFORE INSERT ON "Автомобили"
 FOR EACH ROW
 EXECUTE FUNCTION check_Марка();
 
