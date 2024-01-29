@@ -112,8 +112,8 @@ class DatabaseInterface(QMainWindow):
 
     def initialize_ui(self):
         access_1 = ['public']
-        access_2 = ['public', 'schema_for_admin']
-        access_3 = ['public', 'schema_for_sadmin', 'schema_for_admin']
+        access_3 = ['public', 'schema_for_admin']
+        access_2 = ['public', 'schema_for_sadmin', 'schema_for_admin']
         login_dialog = LoginDialog()
         login_dialog.login_signal.connect(self.login_info)
         login_dialog.exec_()
@@ -129,11 +129,13 @@ class DatabaseInterface(QMainWindow):
         cursor.close()
         if str(results[0][0]) == 'Сотрудник':
             data = access_1
-        elif str(results[0][0]) == "Админ":
+        elif str(results[0][0]) == "Админ" or results[0][0] == None:
             data = access_2
         else:
             data = access_3
         shemma = ', '.join(f"'{item}'" for item in data)
+        print(shemma)
+        print(results[0][0])
 
         buttons_query = f"""
                 SELECT 
@@ -168,8 +170,9 @@ class DatabaseInterface(QMainWindow):
                 layout.addSpacing(button_spacing)
             self.tab_widget.addTab(tab, "Кнопки")
         except Exception as e:
+            print(e)
             error = str(e).split(":")
-            error_message = f"Произошла ошибка при выполнении запроса: {str(error[len(error) - 1])}"
+            error_message = f"Произошла ошибка при выполнении запроса1: {str(error[len(error) - 1])}"
             QMessageBox.critical(self, "Ошибка", error_message)
             print(error_message)
             self.connection.rollback()
@@ -230,6 +233,7 @@ class DatabaseInterface(QMainWindow):
             # Сохраняем результаты в новый файл
             new_document.save("договор_по_заказам_результат.docx")
         except Exception as e:
+            print(e)
             error = str(e).split(":")
             error_message = f"Произошла ошибка при выгрузки: {str(error[len(error) - 1])}"
             QMessageBox.critical(self, "Ошибка выгрузки", error_message)
@@ -253,8 +257,9 @@ class DatabaseInterface(QMainWindow):
             cursor.execute(f'CALL {function_name}({result_string});')
             self.connection.commit()
         except Exception as e:
+            print(e)
             error = str(e).split(":")
-            error_message = f"Произошла ошибка: {str(error[len(error) - 1])}"
+            error_message = f"Произошла ошибка2: {str(error[len(error) - 1])}"
             QMessageBox.critical(self, "Ошибка", error_message)
             self.connection.rollback()
         finally:
@@ -269,8 +274,9 @@ class DatabaseInterface(QMainWindow):
                 print(function_name)
                 self.add_call(function_name, result_string)
             else:
+                print(result_string)
                 cursor = self.connection.cursor()
-
+                #cursor.callproc(f'{function_name}({result_string})')
                 cursor.execute(f'SELECT {function_name}({result_string});')
                 output = cursor.fetchall()
                 self.connection.commit()
@@ -282,8 +288,9 @@ class DatabaseInterface(QMainWindow):
                 else:
                     self.handle_third_window_data(result_lists)
         except Exception as e:
+            print(e)
             error = str(e).split(":")
-            error_message = f"Произошла ошибка: {str(error[len(error) - 1])}"
+            error_message = f"Произошла ошибка3: {str(error[len(error) - 1])}"
             QMessageBox.critical(self, "Ошибка", error_message)
             self.connection.rollback()
         finally:
@@ -299,19 +306,20 @@ class DatabaseInterface(QMainWindow):
                 #user="89125553555",
                 #password="mex1",
 
-                #user="84959876543",
-                #password="admin1",
-
                 #user="89161234567",
                 #password="glmas1",
 
-                user="postgres",
-                password="172839",
+                user="84959876543",
+                password="admin1",
+
+                #user="postgres",
+                #password="172839",
                 host="192.168.0.9"
             )
         except Exception as e:
+            print(e)
             error = str(e).split(":")
-            error_message = f"Произошла ошибка: {str(error[len(error)-1])}"
+            error_message = f"Произошла ошибка4: {str(error[len(error)-1])}"
             QMessageBox.critical(self, "Ошибка", error_message)
 
     def create_tab(self, table_name):

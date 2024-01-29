@@ -1,78 +1,80 @@
---РОЛЬ ДЛЯ СОТРУДНИКОВ
-CREATE ROLE Сотрудник WITH
-	LOGIN
-	NOSUPERUSER
-	INHERIT
-	NOCREATEDB
-	CREATEROLE
-	NOREPLICATION;
+ALTER ROLE Админ SET search_path TO schema_for_sadmin, schema_for_admin, public;
+ALTER ROLE ГлавМас SET search_path TO schema_for_admin, public;
+ALTER ROLE Сотрудник SET search_path TO public;
 
+SHOW search_path;
+DEALLOCATE ALL;
 
---РОЛЬ ДЛЯ ТЕХНИЧЕСКОГО АДМИНИСТРАТОРА (ГЛАВНЫЙ МАСТЕР)
-CREATE ROLE ГлавМас WITH
-	LOGIN
-	NOSUPERUSER
-	INHERIT
-	NOCREATEDB
-	CREATEROLE
-	NOREPLICATION;
-
-
---РОЛЬ ДЛЯ КЛИЕНТСКОГО АДМИНИСТРАТОРА
-CREATE ROLE Админ WITH
-	LOGIN
-	SUPERUSER
-	INHERIT
-	CREATEDB
-	CREATEROLE
-	REPLICATION;
-
-
---СОЗДАНИЕ ЮЗЕРОВ И ДОБАВЛЕНИЕ ИХ К РОЛИ
-CREATE USER "89161234567" WITH PASSWORD 'glmas1';
-GRANT ГлавМас TO "89161234567"
-
-CREATE USER "84959876543" WITH PASSWORD 'admin1';
-GRANT Админ TO "84959876543"
-
-CREATE USER "89125553555" WITH PASSWORD 'mex1';
-GRANT Сотрудник TO "89125553555"
-CREATE USER "83432223344" WITH PASSWORD 'mex2';
-GRANT Сотрудник TO "83432223344"
-CREATE USER "89876543210" WITH PASSWORD 'mex3';
-GRANT Сотрудник TO "89876543210"
-CREATE USER "86425871067" WITH PASSWORD 'mex4';
-GRANT Сотрудник TO "86425871067"
-CREATE USER "89652034780" WITH PASSWORD 'mex5';
-GRANT Сотрудник TO "89652034780"
-CREATE USER "89652147860" WITH PASSWORD 'mex6';
-GRANT Сотрудник TO "89652147860"
-CREATE USER "87852103655" WITH PASSWORD 'mex7';
-GRANT Сотрудник TO "87852103655"
-CREATE USER "89652145607" WITH PASSWORD 'mex8';
-GRANT Сотрудник TO "89652145607"
+SET SESSION AUTHORIZATION '84959876543';
+SELECT Остаток_По_Платежам('4');
+SET SESSION AUTHORIZATION postgres;
 
 --РАЗРЕШЕНИЯ ДЛЯ РОЛИ АДМИН
-GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Владелец_Авто TO Админ;
-GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Сотрудники TO Админ;
 GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Автомобили TO Админ;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Сотрудники TO Админ;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE График_Работы TO Админ;
 GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Запчасти TO Админ;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Услуги TO Админ;
 GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Заказы TO Админ;
 GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Проданные_Запчасти_В_Заказе TO Админ;
-GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Платежи TO Админ;
-GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Услуги TO Админ;
-GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE График_Работы TO Админ;
 GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Услуги_В_Заказе TO Админ;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Владелец_Авто TO Админ;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Платежи TO Админ;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Модель TO Админ;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Марка TO Админ;
+
+
+
+GRANT EXECUTE ON PROCEDURE Добавить_Владельца_Авто(VARCHAR, VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR) TO Админ;
+GRANT EXECUTE ON PROCEDURE Добавить_Заказ(VARCHAR, TEXT, INTEGER) TO Админ;
+GRANT EXECUTE ON PROCEDURE Добавить_Запчасть_В_Заказ(INTEGER,INTEGER,INTEGER) TO Админ;
+GRANT EXECUTE ON PROCEDURE Добавить_Марку(VARCHAR) TO Админ;
+GRANT EXECUTE ON PROCEDURE Добавить_Модель(VARCHAR, VARCHAR) TO Админ;
+GRANT EXECUTE ON PROCEDURE Добавить_платеж(NUMERIC, TEXT, INTEGER) TO Админ;
+GRANT EXECUTE ON FUNCTION Список_Запчастей_По_Модели(VARCHAR) TO Админ;
+GRANT EXECUTE ON FUNCTION Остаток_По_Платежам(INTEGER) TO Админ;
+GRANT EXECUTE ON FUNCTION Найти_Автомобиль_По_Винкоду(VARCHAR) TO Админ;
+GRANT EXECUTE ON FUNCTION История_Обслуживания_Клиента(INTEGER) TO Админ;
+GRANT EXECUTE ON FUNCTION Информация_О_Авто_И_Работах(INTEGER) TO Админ;
+GRANT EXECUTE ON FUNCTION Топ_Популярных_Услуг() TO Админ;
+GRANT EXECUTE ON FUNCTION Количество_Услуг_По_Типу() TO Админ;
+GRANT EXECUTE ON FUNCTION Количество_Моделей_По_Маркам() TO Админ;
+GRANT EXECUTE ON FUNCTION Выгрузить_заказ(INTEGER) TO Админ;
+GRANT EXECUTE ON FUNCTION Остаток_По_Платежам(INTEGER) TO Админ;
+GRANT EXECUTE ON FUNCTION Самая_Частая_Машина() TO Админ;
+GRANT EXECUTE ON FUNCTION Самый_Частый_Клиент() TO Админ;
+GRANT EXECUTE ON FUNCTION Сотрудники_По_Автомобилю(INTEGER) TO Админ;
+GRANT EXECUTE ON FUNCTION Сумм_Стоимость_Запчастей_За_Месяц() TO Админ;
+GRANT EXECUTE ON FUNCTION Суммарная_Выручка_За_Период(DATE, DATE) TO Админ;
 
 --РАЗРЕШЕНИЯ ДЛЯ РОЛИ ГлавМас
-GRANT SELECT ON TABLE Автомобили TO ГлавМас;
-GRANT SELECT ON TABLE Сотрудники TO ГлавМас;
-GRANT SELECT ON TABLE График_Работы TO ГлавМас;
-GRANT SELECT ON TABLE Запчасти TO ГлавМас;
-GRANT SELECT ON TABLE Услуги TO ГлавМас;
-GRANT SELECT, UPDATE ON TABLE Заказы TO ГлавМас;
-GRANT SELECT, UPDATE, DELETE ON TABLE Проданные_Запчасти_В_Заказе TO ГлавМас;
-GRANT SELECT, UPDATE, DELETE ON TABLE Услуги_В_Заказе TO ГлавМас;
+GRANT SELECT, UPDATE, INSERT ON TABLE Автомобили TO ГлавМас;
+GRANT SELECT, UPDATE, INSERT ON TABLE Сотрудники TO ГлавМас;
+GRANT SELECT, UPDATE, INSERT ON TABLE График_Работы TO ГлавМас;
+GRANT SELECT, UPDATE, INSERT ON TABLE Запчасти TO ГлавМас;
+GRANT SELECT, UPDATE, INSERT ON TABLE Услуги TO ГлавМас;
+GRANT SELECT, UPDATE, INSERT ON TABLE Заказы TO ГлавМас;
+GRANT SELECT, UPDATE, INSERT ON TABLE Проданные_Запчасти_В_Заказе TO ГлавМас;
+GRANT SELECT, UPDATE, INSERT ON TABLE Услуги_В_Заказе TO ГлавМас;
+GRANT SELECT, UPDATE, INSERT ON TABLE Владелец_Авто TO ГлавМас;
+GRANT SELECT, UPDATE, INSERT ON TABLE Платежи TO ГлавМас;
+GRANT SELECT, UPDATE, INSERT ON TABLE Модель TO ГлавМас;
+GRANT SELECT, UPDATE, INSERT ON TABLE Марка TO ГлавМас;
+
+GRANT EXECUTE ON PROCEDURE Добавить_Владельца_Авто(VARCHAR, VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR) TO ГлавМас;
+GRANT EXECUTE ON PROCEDURE Добавить_Заказ(VARCHAR, TEXT, INTEGER) TO ГлавМас;
+GRANT EXECUTE ON PROCEDURE Добавить_Запчасть_В_Заказ(INTEGER,INTEGER,INTEGER) TO ГлавМас;
+GRANT EXECUTE ON PROCEDURE Добавить_Марку(VARCHAR) TO ГлавМас;
+GRANT EXECUTE ON PROCEDURE Добавить_Модель(VARCHAR, VARCHAR) TO ГлавМас;
+GRANT EXECUTE ON PROCEDURE Добавить_платеж(NUMERIC, TEXT, INTEGER) TO ГлавМас;
+GRANT EXECUTE ON FUNCTION Список_Запчастей_По_Модели(VARCHAR) TO ГлавМас;
+GRANT EXECUTE ON FUNCTION Остаток_По_Платежам(INTEGER) TO ГлавМас;
+GRANT EXECUTE ON FUNCTION Найти_Автомобиль_По_Винкоду(VARCHAR) TO ГлавМас;
+GRANT EXECUTE ON FUNCTION История_Обслуживания_Клиента(INTEGER) TO ГлавМас;
+GRANT EXECUTE ON FUNCTION Информация_О_Авто_И_Работах(INTEGER) TO ГлавМас;
+GRANT EXECUTE ON FUNCTION Топ_Популярных_Услуг() TO ГлавМас;
+GRANT EXECUTE ON FUNCTION Количество_Услуг_По_Типу() TO ГлавМас;
+GRANT EXECUTE ON FUNCTION Количество_Моделей_По_Маркам() TO ГлавМас;
 
 --РАЗРЕШЕНИЯ ДЛЯ РОЛИ Сотрудник
 GRANT SELECT ON TABLE Автомобили TO Сотрудник;
@@ -82,6 +84,15 @@ GRANT SELECT ON TABLE Проданные_Запчасти_В_Заказе TO С�
 GRANT SELECT ON TABLE График_Работы TO Сотрудник;
 GRANT SELECT ON TABLE Запчасти TO Сотрудник;
 GRANT SELECT ON TABLE Услуги_В_Заказе TO Сотрудник;
+GRANT SELECT ON TABLE Услуги TO Сотрудник;
+GRANT SELECT ON TABLE Марка TO Сотрудник;
+GRANT SELECT ON TABLE Модель TO Сотрудник;
+
+GRANT EXECUTE ON FUNCTION Топ_Популярных_Услуг() TO Сотрудник;
+GRANT EXECUTE ON FUNCTION Количество_Услуг_По_Типу() TO Сотрудник;
+GRANT EXECUTE ON FUNCTION Количество_Моделей_По_Маркам() TO Сотрудник;
+
+
 
 
 --ПОЛИТИКА НА УРОВНЕ СТРОКЪ
