@@ -34,7 +34,7 @@ FOR EACH ROW
 EXECUTE FUNCTION check_Имя();
 
 
-				--ТРИГГЕР НА ОТЧЕСТВО С БОЛЬЩОЙ БУКВЫ
+				--ТРИГГЕР НА Отчество С БОЛЬЩОЙ БУКВЫ
 CREATE OR REPLACE FUNCTION check_Отчество()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -63,6 +63,10 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql;
+CREATE TRIGGER trigger_check_Модель
+BEFORE INSERT ON "Модель"
+FOR EACH ROW
+EXECUTE FUNCTION check_Модель();
 
 
 				--ТРИГГЕР НА НАЗВАНИЕ МАРКИ НА АНГЛ ЯЗ
@@ -78,7 +82,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trigger_check_brand
-BEFORE INSERT ON "Автомобили"
+BEFORE INSERT ON "Марка"
 FOR EACH ROW
 EXECUTE FUNCTION check_Марка();
 
@@ -121,30 +125,6 @@ BEFORE UPDATE ON "Заказы"
 FOR EACH ROW
 EXECUTE FUNCTION check_order_status();
 
-
-				--Триггер для автоматического обновления статуса заказа при изменении статуса его деталей
-
-CREATE OR REPLACE FUNCTION update_order_status()
-RETURNS TRIGGER AS $$
-BEGIN
-    UPDATE "Заказы"
-    SET "Статус_Заказа" = 'В обработке'
-    WHERE "ID_Заказа" = NEW."ID_Заказа" AND
-          EXISTS (SELECT 1 FROM "Проданные_Запчасти_В_Заказе" WHERE "ID_Заказа" = NEW."ID_Заказа" AND "Статус" = 'В обработке');
-
-    UPDATE "Заказы"
-    SET "Статус_Заказа" = 'Выполнен'
-    WHERE "ID_Заказа" = NEW."ID_Заказа" AND
-          NOT EXISTS (SELECT 1 FROM "Проданные_Запчасти_В_Заказе" WHERE "ID_Заказа" = NEW."ID_Заказа" AND "Статус" = 'В обработке');
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_order_status_trigger
-AFTER UPDATE ON "Проданные_Запчасти_В_Заказе"
-FOR EACH ROW
-EXECUTE FUNCTION update_order_status();
 
 
 				--Триггер для проверки суммы платежей

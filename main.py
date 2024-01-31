@@ -163,6 +163,8 @@ class DatabaseInterface(QMainWindow):
 
             for result in results:
                 function_name, schema_name, arguments, result_type = result
+                if "pgp" in function_name:
+                    continue
                 button = QPushButton(f"{function_name}", self)
                 button.clicked.connect(lambda _, fname=function_name, args=arguments: self.on_function_button_click(fname, args))
                 button.setStyleSheet("text-align: center;")

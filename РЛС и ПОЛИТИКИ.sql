@@ -10,6 +10,7 @@ SELECT Остаток_По_Платежам('4');
 SET SESSION AUTHORIZATION postgres;
 
 --РАЗРЕШЕНИЯ ДЛЯ РОЛИ АДМИН
+--РАЗРЕШЕНИЯ ДЛЯ РОЛИ ГлавМас
 GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Автомобили TO Админ;
 GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Сотрудники TO Админ;
 GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE График_Работы TO Админ;
@@ -23,8 +24,6 @@ GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Платежи TO Админ;
 GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Модель TO Админ;
 GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE Марка TO Админ;
 
-
-
 GRANT EXECUTE ON PROCEDURE Добавить_Владельца_Авто(VARCHAR, VARCHAR,VARCHAR,VARCHAR,VARCHAR,VARCHAR) TO Админ;
 GRANT EXECUTE ON PROCEDURE Добавить_Заказ(VARCHAR, TEXT, INTEGER) TO Админ;
 GRANT EXECUTE ON PROCEDURE Добавить_Запчасть_В_Заказ(INTEGER,INTEGER,INTEGER) TO Админ;
@@ -32,7 +31,6 @@ GRANT EXECUTE ON PROCEDURE Добавить_Марку(VARCHAR) TO Админ;
 GRANT EXECUTE ON PROCEDURE Добавить_Модель(VARCHAR, VARCHAR) TO Админ;
 GRANT EXECUTE ON PROCEDURE Добавить_платеж(NUMERIC, TEXT, INTEGER) TO Админ;
 GRANT EXECUTE ON FUNCTION Список_Запчастей_По_Модели(VARCHAR) TO Админ;
-GRANT EXECUTE ON FUNCTION Остаток_По_Платежам(INTEGER) TO Админ;
 GRANT EXECUTE ON FUNCTION Найти_Автомобиль_По_Винкоду(VARCHAR) TO Админ;
 GRANT EXECUTE ON FUNCTION История_Обслуживания_Клиента(INTEGER) TO Админ;
 GRANT EXECUTE ON FUNCTION Информация_О_Авто_И_Работах(INTEGER) TO Админ;
@@ -40,12 +38,24 @@ GRANT EXECUTE ON FUNCTION Топ_Популярных_Услуг() TO Админ
 GRANT EXECUTE ON FUNCTION Количество_Услуг_По_Типу() TO Админ;
 GRANT EXECUTE ON FUNCTION Количество_Моделей_По_Маркам() TO Админ;
 GRANT EXECUTE ON FUNCTION Выгрузить_заказ(INTEGER) TO Админ;
-GRANT EXECUTE ON FUNCTION Остаток_По_Платежам(INTEGER) TO Админ;
 GRANT EXECUTE ON FUNCTION Самая_Частая_Машина() TO Админ;
 GRANT EXECUTE ON FUNCTION Самый_Частый_Клиент() TO Админ;
 GRANT EXECUTE ON FUNCTION Сотрудники_По_Автомобилю(INTEGER) TO Админ;
-GRANT EXECUTE ON FUNCTION Сумм_Стоимость_Запчастей_За_Месяц() TO Админ;
 GRANT EXECUTE ON FUNCTION Суммарная_Выручка_За_Период(DATE, DATE) TO Админ;
+
+
+GRANT EXECUTE ON FUNCTION Суммарная_Выручка_От_Платежей(DATE, DATE) TO Админ;
+GRANT EXECUTE ON FUNCTION Суммарная_Стоимость_Проданных_Зап(DATE, DATE) TO Админ;
+GRANT EXECUTE ON FUNCTION Суммарная_Стоимость_Запчастей_ЗаП() TO Админ;
+GRANT EXECUTE ON FUNCTION Сотрудники_По_Автомобилю(INTEGER) TO Админ;
+GRANT EXECUTE ON FUNCTION Расшифровать_Сотрудников(VARCHAR) TO Админ;
+GRANT EXECUTE ON FUNCTION Рассчитать_Остаток_По_Платежам(INTEGER) TO Админ;
+GRANT EXECUTE ON FUNCTION Получить_Информацию_О_Заказах() TO Админ;
+GRANT EXECUTE ON FUNCTION Общая_Стоимость_Услуг_В_Заказе() TO Админ;
+GRANT EXECUTE ON FUNCTION Маскировка_СТС(TEXT) TO Админ;
+GRANT EXECUTE ON FUNCTION Демаскировка_СТС(TEXT) TO Админ;
+
+
 
 --РАЗРЕШЕНИЯ ДЛЯ РОЛИ ГлавМас
 GRANT SELECT, UPDATE, INSERT ON TABLE Автомобили TO ГлавМас;
@@ -68,13 +78,22 @@ GRANT EXECUTE ON PROCEDURE Добавить_Марку(VARCHAR) TO ГлавМа�
 GRANT EXECUTE ON PROCEDURE Добавить_Модель(VARCHAR, VARCHAR) TO ГлавМас;
 GRANT EXECUTE ON PROCEDURE Добавить_платеж(NUMERIC, TEXT, INTEGER) TO ГлавМас;
 GRANT EXECUTE ON FUNCTION Список_Запчастей_По_Модели(VARCHAR) TO ГлавМас;
-GRANT EXECUTE ON FUNCTION Остаток_По_Платежам(INTEGER) TO ГлавМас;
 GRANT EXECUTE ON FUNCTION Найти_Автомобиль_По_Винкоду(VARCHAR) TO ГлавМас;
 GRANT EXECUTE ON FUNCTION История_Обслуживания_Клиента(INTEGER) TO ГлавМас;
 GRANT EXECUTE ON FUNCTION Информация_О_Авто_И_Работах(INTEGER) TO ГлавМас;
 GRANT EXECUTE ON FUNCTION Топ_Популярных_Услуг() TO ГлавМас;
 GRANT EXECUTE ON FUNCTION Количество_Услуг_По_Типу() TO ГлавМас;
 GRANT EXECUTE ON FUNCTION Количество_Моделей_По_Маркам() TO ГлавМас;
+
+
+GRANT EXECUTE ON FUNCTION Суммарная_Стоимость_Запчастей_ЗаП() TO ГлавМас;
+GRANT EXECUTE ON FUNCTION Сотрудники_По_Автомобилю(INTEGER) TO ГлавМас;
+GRANT EXECUTE ON FUNCTION Расшифровать_Сотрудников(VARCHAR) TO ГлавМас;
+GRANT EXECUTE ON FUNCTION Рассчитать_Остаток_По_Платежам(INTEGER) TO ГлавМас;
+GRANT EXECUTE ON FUNCTION Получить_Информацию_О_Заказах() TO ГлавМас;
+GRANT EXECUTE ON FUNCTION Общая_Стоимость_Услуг_В_Заказе() TO ГлавМас;
+GRANT EXECUTE ON FUNCTION Маскировка_СТС(TEXT) TO ГлавМас;
+GRANT EXECUTE ON FUNCTION Демаскировка_СТС(TEXT) TO ГлавМас;
 
 --РАЗРЕШЕНИЯ ДЛЯ РОЛИ Сотрудник
 GRANT SELECT ON TABLE Автомобили TO Сотрудник;
