@@ -311,8 +311,8 @@ class DatabaseInterface(QMainWindow):
                 #user="89161234567",
                 #password="glmas1",
 
-                user="84959876543",
-                password="admin1",
+                #user="84959876543",
+                #password="admin1",
 
                 #user="postgres",
                 #password="172839",
