@@ -266,7 +266,7 @@ class DatabaseInterface(QMainWindow):
         except Exception as e:
             print(e)
             error = str(e).split(":")
-            error_message = f"Произошла ошибка2: {str(error[len(error) - 1])}"
+            error_message = f"Произошла ошибка: {str(error[len(error) - 1])}"
             QMessageBox.critical(self, "Ошибка", error_message)
             self.connection.rollback()
         finally:
@@ -297,7 +297,7 @@ class DatabaseInterface(QMainWindow):
         except Exception as e:
             print(e)
             error = str(e).split(":")
-            error_message = f"Произошла ошибка3: {str(error[len(error) - 1])}"
+            error_message = f"Произошла ошибка: {str(error[len(error) - 1])}"
             QMessageBox.critical(self, "Ошибка", error_message)
             self.connection.rollback()
         finally:
@@ -326,7 +326,7 @@ class DatabaseInterface(QMainWindow):
         except Exception as e:
             print(e)
             error = str(e).split(":")
-            error_message = f"Произошла ошибка4: {str(error[len(error)-1])}"
+            error_message = f"Произошла ошибка: {str(error[len(error)-1])}"
             QMessageBox.critical(self, "Ошибка", error_message)
 
     def create_tab(self, table_name):
