@@ -307,8 +307,8 @@ class DatabaseInterface(QMainWindow):
         try:
             self.connection = psycopg2.connect(
                 database="autoservice",
-                user=login,
-                password=password,
+                #user=login,
+                #password=password,
 
                 #user="89125553555",
                 #password="mex1",
@@ -316,11 +316,11 @@ class DatabaseInterface(QMainWindow):
                 #user="89161234567",
                 #password="glmas1",
 
-                #user="84959876543",
-                #password="admin1",
+                user="84959876543",
+                password="admin1",
 
-                user="postgres",
-                password="172839",
+                #user="postgres",
+                #password="172839",
                 host="192.168.0.9"
             )
         except Exception as e:

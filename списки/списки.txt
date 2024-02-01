@@ -62,5 +62,6 @@
 
 	
 
-GRANT USAGE ON SCHEMA public, schema_for_admin, schema_for_sadmin TO Админ;  -- Здесь предполагается, что ваши объекты находятся в схеме "public"
+GRANT USAGE ON SCHEMA public, schema_for_admin, schema_for_sadmin TO Админ;
 GRANT USAGE ON SCHEMA public, schema_for_admin TO ГлавМас; 
+
