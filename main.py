@@ -2,7 +2,10 @@ import re
 import sys
 import psycopg2
 from PyQt5 import QtCore, QtGui, QtWidgets, Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget, QVBoxLayout, QWidget, QTableWidget, QTableWidgetItem, QPushButton, QDialog, QLabel, QLineEdit, QMessageBox, QListWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, \
+    QTabWidget, QVBoxLayout, QWidget, QTableWidget, \
+    QTableWidgetItem, QPushButton, QDialog, QLabel, \
+    QLineEdit, QMessageBox, QListWidget
 from PyQt5.QtCore import Qt, pyqtSignal
 import traceback
 from docx import Document
@@ -200,7 +203,9 @@ class DatabaseInterface(QMainWindow):
         if len(arguments) != 1:
             field_labels = []
             for i in range(1, len(arguments)):
-                if 'character' in arguments[i] or 'varying' in arguments[i] or 'integer' in arguments[i] or 'numeric' in arguments[i] or 'date' in arguments[i] or 'text' in arguments[i] or 'timestamp' in arguments[i] or arguments[i] == '':
+                if 'character' in arguments[i] or 'varying' in arguments[i] or 'integer' in arguments[i]\
+                        or 'numeric' in arguments[i] or 'date' in arguments[i] or 'text' in arguments[i]\
+                        or 'timestamp' in arguments[i] or arguments[i] == '':
                     continue
                 else:
                     field_labels.append(arguments[i])
@@ -302,8 +307,8 @@ class DatabaseInterface(QMainWindow):
         try:
             self.connection = psycopg2.connect(
                 database="autoservice",
-                #user=login,
-                #password=password,
+                user=login,
+                password=password,
 
                 #user="89125553555",
                 #password="mex1",
@@ -314,8 +319,8 @@ class DatabaseInterface(QMainWindow):
                 #user="84959876543",
                 #password="admin1",
 
-                #user="postgres",
-                #password="172839",
+                user="postgres",
+                password="172839",
                 host="192.168.0.9"
             )
         except Exception as e:
@@ -368,10 +373,6 @@ class DatabaseInterface(QMainWindow):
         self.connection.commit()
         cursor.close()
         return tables
-
-    def add_row(self, table_name, table_widget):
-        row_position = table_widget.rowCount()
-        table_widget.insertRow(row_position)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

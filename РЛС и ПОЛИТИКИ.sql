@@ -43,7 +43,9 @@ GRANT EXECUTE ON FUNCTION Самый_Частый_Клиент() TO Админ;
 GRANT EXECUTE ON FUNCTION Сотрудники_По_Автомобилю(INTEGER) TO Админ;
 GRANT EXECUTE ON FUNCTION Суммарная_Выручка_За_Период(DATE, DATE) TO Админ;
 
-
+GRANT EXECUTE ON FUNCTION pgp_pub_decrypt(bytea, bytea) TO Админ;
+GRANT EXECUTE ON FUNCTION pgp_pub_decrypt(bytea, bytea, text) TO Админ;
+GRANT EXECUTE ON FUNCTION pgp_pub_decrypt(bytea, bytea, text, text) TO Админ;
 GRANT EXECUTE ON FUNCTION Суммарная_Выручка_От_Платежей(DATE, DATE) TO Админ;
 GRANT EXECUTE ON FUNCTION Суммарная_Стоимость_Проданных_Зап(DATE, DATE) TO Админ;
 GRANT EXECUTE ON FUNCTION Суммарная_Стоимость_Запчастей_ЗаП() TO Админ;
@@ -85,7 +87,9 @@ GRANT EXECUTE ON FUNCTION Топ_Популярных_Услуг() TO ГлавМ
 GRANT EXECUTE ON FUNCTION Количество_Услуг_По_Типу() TO ГлавМас;
 GRANT EXECUTE ON FUNCTION Количество_Моделей_По_Маркам() TO ГлавМас;
 
-
+GRANT EXECUTE ON FUNCTION pgp_pub_decrypt(bytea, bytea) TO ГлавМас;
+GRANT EXECUTE ON FUNCTION pgp_pub_decrypt(bytea, bytea, text) TO ГлавМас;
+GRANT EXECUTE ON FUNCTION pgp_pub_decrypt(bytea, bytea, text, text) TO ГлавМас;
 GRANT EXECUTE ON FUNCTION Суммарная_Стоимость_Запчастей_ЗаП() TO ГлавМас;
 GRANT EXECUTE ON FUNCTION Сотрудники_По_Автомобилю(INTEGER) TO ГлавМас;
 GRANT EXECUTE ON FUNCTION Расшифровать_Сотрудников(VARCHAR) TO ГлавМас;
